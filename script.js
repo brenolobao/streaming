@@ -33,7 +33,6 @@ function displayCards() {
     for (let i = 0; i < nomeFilme.length; i++) {
         const card = document.createElement('div');
         card.className = 'card';
-        card.style.backgroundColor = gerar_cor()
 
         const title = document.createElement('h3');
         title.textContent = nomeFilme[i];
@@ -53,11 +52,4 @@ function displayCards() {
 
         cardsContainer.appendChild(card);
     }
-}
-function gerar_cor(opacidade = 1) {
-    let r = Math.random() * 255;
-    let g = Math.random() * 255;
-    let b = Math.random() * 255;
-
-    return `rgba(${r.toFixed(1)}, ${g.toFixed(1)}, ${b.toFixed(1)}, ${opacidade})`;
 }
