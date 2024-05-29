@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>Filmes em Cartaz</title>
     <style>
         * {
@@ -76,19 +77,19 @@
             text-align: center;
             position: absolute;
             padding: 10px;
-            background-color: #007bff;
+            background-color: none;
             color: white;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 50%;
             cursor: pointer;
             top: 15px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.7);
             right: 15px;
-            border: none;
+            border: 1px solid #f7921e;
         }
 
         .watch-link:hover {
-            background-color: #0056b3;
+            background-color: #f7921e;
         }
         @media (max-width:640px) {
             #movies-container{
@@ -218,7 +219,7 @@
 
             const watchLink = document.createElement('a');
             watchLink.className = 'watch-link';
-            watchLink.textContent = 'Assistir';
+            watchLink.innerHTML = '<i class="material-icons">play_arrow</i>';
             watchLink.href = movieLink;
 
             movieDetails.appendChild(movieTitle);
