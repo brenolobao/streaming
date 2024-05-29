@@ -1,32 +1,40 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
 body {
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #f0f0f0;
+    justify-content: center;
+    background-color: black;
     margin: 0;
     padding: 20px;
 }
 
 h1 {
-    color: #333;
+    color: white;
+    margin-bottom: 20px;
 }
 
 #movies-container {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
-    justify-content: center;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 .movie-card {
-    background-color: white;
-    border: 1px solid #ccc;
+    background-color: rgb(26, 26, 26);
     border-radius: 8px;
     overflow: hidden;
     width: 200px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    position: relative;
+    height: 440px;
+    display: flex;
+    flex-direction: column;
 }
 
 .movie-card img {
@@ -41,7 +49,7 @@ h1 {
 .movie-title {
     font-size: 16px;
     margin: 0 0 10px 0;
-    color: #333;
+    color: white;
 }
 
 .movie-release-date {
