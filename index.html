@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Filmes em Cartaz</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         * {
             padding: 0;
@@ -40,15 +41,19 @@
             background-color: rgb(26, 26, 26);
             border-radius: 8px;
             overflow: hidden;
-            width: 200px;
-            height: 440px;
+            width: 310px;
+            height: auto;
             display: flex;
             flex-direction: column;
+            color: white;
+            position: relative;
         }
 
         .movie-card img {
             width: 100%;
             height: auto;
+            object-fit:cover;
+            object-position: center;
         }
 
         .movie-details {
@@ -56,43 +61,36 @@
         }
 
         .movie-title {
-            font-size: 16px;
+            font-size: 18px;
             margin: 0 0 10px 0;
-            color: white;
         }
 
-        .movie-release-date {
+        .movie-release-date,
+        .movie-overview,
+        .movie-duration,
+        .movie-rating {
             font-size: 14px;
-            color: #666;
+            margin-bottom: 10px;
         }
 
         .watch-link {
-            display: block;
             text-align: center;
-            margin-top: 10px;
-            padding: 5px;
+            position: absolute;
+            padding: 10px;
             background-color: #007bff;
             color: white;
             text-decoration: none;
             border-radius: 5px;
             cursor: pointer;
+            top: 15px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.7);
+            right: 15px;
+            border: none;
         }
 
         .watch-link:hover {
             background-color: #0056b3;
         }
-
-        @media (max-width:640px) {
-            .movie-card {
-                width: 85%;
-                height: auto;
-            }
-
-            #movies-container {
-                justify-content: center;
-            }
-        }
-
         #modal {
             display: none;
             position: fixed;
@@ -125,20 +123,16 @@
             border-radius: 50%;
             cursor: pointer;
         }
-
-        #close-button:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 
 <body>
     <h1>Filmes em Cartaz</h1>
     <div id="movies-container"></div>
-
-    <div id="modal">
-        <button id="close-button">x</button>
-        <iframe id="movie-iframe" src="" frameborder="0" allow="autoplay"></iframe>
+    <div id="modal" class="modal">
+            <button id="close-button" onclick="closeModal()">x</button>
+            <iframe id="movie-iframe" src="" frameborder="0" allow="autoplay"></iframe>
+        </div>
     </div>
 
     <script>
@@ -176,25 +170,46 @@
 
         async function fetchMovieData(movieName, apiKey) {
             const encodedMovieName = encodeURIComponent(movieName);
-            const apiUrl = `https://api.themoviedb.org/3/search/movie?query=${encodedMovieName}&api_key=${apiKey}`;
+            const apiUrl = `https://api.themoviedb.org/3/search/movie?query=${encodedMovieName}&language=pt-BR&region=BR&api_key=${apiKey}`;
 
             try {
                 const response = await fetch(apiUrl);
                 const data = await response.json();
                 if (response.ok && data.results.length > 0) {
                     const movie = data.results[0];
+                    const movieDetails = await fetchMovieDetails(movie.id, apiKey);
                     return {
                         title: movie.title,
                         releaseDate: movie.release_date,
                         posterPath: movie.poster_path,
+                        overview: movie.overview,
+                        duration: movieDetails.runtime,
+                        rating: movie.vote_average,
                         watchLink: `https://www.themoviedb.org/movie/${movie.id}`
                     };
                 } else {
-                    console.error(`Error fetching movie data for "${movieName}": No results found`);
+                    console.error(`Erro ao buscar dados do filme "${movieName}": Nenhum resultado encontrado`);
                     return null;
                 }
             } catch (error) {
-                console.error(`Error fetching movie data for "${movieName}":`, error);
+                console.error(`Erro ao buscar dados do filme "${movieName}":`, error);
+                return null;
+            }
+        }
+
+        async function fetchMovieDetails(movieId, apiKey) {
+            const apiUrl = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}`;
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                if (response.ok) {
+                    return data;
+                } else {
+                    console.error(`Erro ao buscar detalhes do filme com ID "${movieId}": Nenhum resultado encontrado`);
+                    return null;
+                }
+            } catch (error) {
+                console.error(`Erro ao buscar detalhes do filme com ID "${movieId}":`, error);
                 return null;
             }
         }
@@ -218,13 +233,28 @@
             movieReleaseDate.className = 'movie-release-date';
             movieReleaseDate.textContent = `Lançamento: ${movieData.releaseDate}`;
 
-            const watchLink = document.createElement('a');
+            const movieOverview = document.createElement('p');
+            movieOverview.className = 'movie-overview';
+            movieOverview.textContent = `Sinopse: ${movieData.overview}`;
+
+            const movieDuration = document.createElement('p');
+            movieDuration.className = 'movie-duration';
+            movieDuration.textContent = `Duração: ${movieData.duration} minutos`;
+
+            const movieRating = document.createElement('p');
+            movieRating.className = 'movie-rating';
+            movieRating.textContent = `Avaliação: ${movieData.rating}/10`;
+
+            const watchLink = document.createElement('button');
             watchLink.className = 'watch-link';
             watchLink.textContent = 'Assistir';
             watchLink.onclick = () => openModal(movieLink);
 
             movieDetails.appendChild(movieTitle);
             movieDetails.appendChild(movieReleaseDate);
+            movieDetails.appendChild(movieOverview);
+            movieDetails.appendChild(movieDuration);
+            movieDetails.appendChild(movieRating);
             movieDetails.appendChild(watchLink);
             movieCard.appendChild(movieImage);
             movieCard.appendChild(movieDetails);
@@ -237,15 +267,13 @@
             const iframe = document.getElementById('movie-iframe');
             iframe.src = movieLink;
             modal.style.display = 'flex';
-            document.body.style.overflow = "hidden"
         }
 
-        document.getElementById('close-button').onclick = () => {
+        function closeModal() {
             const modal = document.getElementById('modal');
             const iframe = document.getElementById('movie-iframe');
             iframe.src = '';
             modal.style.display = 'none';
-            document.body.style.overflow = "auto"
         }
     </script>
 </body>
