@@ -76,20 +76,26 @@
         .watch-link {
             text-align: center;
             position: absolute;
-            padding: 10px;
+            width:35px;
+            height:35px;
+            display:grid;
+            place-itens:center;
             background-color: none;
             color: white;
             text-decoration: none;
             border-radius: 50%;
             cursor: pointer;
             top: 15px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.7);
             right: 15px;
-            border: 1px solid #f7921e;
+            border: 2px solid #f7921e;
         }
 
         .watch-link:hover {
             background-color: #f7921e;
+        }
+        .watch-link i{
+            color:#f7921e;
+            font-size:15px;
         }
         @media (max-width:640px) {
             #movies-container{
