@@ -272,6 +272,7 @@
             const iframe = document.getElementById('movie-iframe');
             iframe.src = movieLink;
             modal.style.display = 'flex';
+            document.body.style.overflow = "hidden";
         }
 
         function closeModal() {
@@ -279,6 +280,7 @@
             const iframe = document.getElementById('movie-iframe');
             iframe.src = '';
             modal.style.display = 'none';
+            document.body.style.overflow = "auto";
         }
     </script>
 </body>
