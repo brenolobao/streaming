@@ -123,7 +123,10 @@
 
             return [movieNames, movieLinks];
         }
-
+        
+            const filmCount = document.createElement('p')
+            filmCount.textContent = `Total de filmes: ${movieNames.length}`;
+        
         async function displayMovies(movieNames, movieLinks, apiKey) {
             const moviesContainer = document.getElementById('movies-container');
 
@@ -183,6 +186,7 @@
         }
 
         function createMovieCard(movieData, movieLink) {
+            
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
 
