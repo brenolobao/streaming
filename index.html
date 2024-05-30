@@ -114,6 +114,8 @@
             const text = await fetch('movies.txt').then(response => response.text());
             const [movieNames, movieLinks] = processLinksFile(text);
             await displayMovies(movieNames, movieLinks, API_KEY);
+            const filmCount = document.querySelector('.filmCount');
+            filmCount.innerHTML = `total de filmes: ${movieNames.length}`
         });
 
         function processLinksFile(text) {
@@ -235,8 +237,7 @@
 
             return movieCard;
         }
-        const filmCount = document.querySelector('.filmCount');
-        filmCount.innerHTML = `total de filmes: ${movieNames.length}`
+        
     </script>
 </body>
 
