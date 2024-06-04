@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title>Filmes</title>
+    <title>Filmes Top Semana</title>
     <style>
         * {
             padding: 0;
@@ -28,9 +28,10 @@
             color: white;
             margin-bottom: 20px;
         }
-        p{
-            color:lightgray;
-            margin-bottom:15px;
+
+        p {
+            color: lightgray;
+            margin-bottom: 15px;
         }
 
         #movies-container {
@@ -38,11 +39,10 @@
             flex-wrap: wrap;
             gap: 20px;
             justify-content: flex-start;
-           
         }
 
         .movie-card {
-            background-color: rgb(10, 10, 10);
+            background-color: rgb(0, 0, 0);
             border-radius: 8px;
             overflow: hidden;
             width: 310px;
@@ -51,12 +51,13 @@
             flex-direction: column;
             color: white;
             position: relative;
+            cursor: pointer;
         }
 
         .movie-card img {
             width: 100%;
             height: auto;
-            object-fit:cover;
+            object-fit: cover;
             object-position: center;
         }
 
@@ -90,23 +91,44 @@
             line-height: 0px;
             right: 15px;
         }
-        
-        @media (max-width:640px) {
-            #movies-container{
-                justify-content:center;
+
+        @media (max-width: 640px) {
+            #movies-container {
+                justify-content: center;
             }
+
             .movie-card {
-                width:85vw;
+                width: 85vw;
             }
+        }
+
+        .search {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+
+        .search i {
+            color: white;
         }
     </style>
 </head>
 
 <body>
     <h1>Filmes</h1>
+    <div class="search">
+        <i class="material-icons">search</i>
+        <input id="search-input" type="text" placeholder="Faça sua pesquisa">
+    </div>
     <p class="filmCount"></p>
     <div id="movies-container"></div>
-    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -115,7 +137,12 @@
             const [movieNames, movieLinks] = processLinksFile(text);
             await displayMovies(movieNames, movieLinks, API_KEY);
             const filmCount = document.querySelector('.filmCount');
-            filmCount.innerHTML = `total de filmes: ${movieNames.length}`
+            filmCount.innerHTML = `Total de filmes: ${movieNames.length}`;
+
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', () => {
+                filterMovies(searchInput.value, movieNames, movieLinks, API_KEY);
+            });
         });
 
         function processLinksFile(text) {
@@ -130,9 +157,10 @@
 
             return [movieNames, movieLinks];
         }
-        
+
         async function displayMovies(movieNames, movieLinks, apiKey) {
             const moviesContainer = document.getElementById('movies-container');
+            moviesContainer.innerHTML = ''; // Limpa o container antes de adicionar novos cards
 
             for (let i = 0; i < movieNames.length; i++) {
                 const movieData = await fetchMovieData(movieNames[i], apiKey);
@@ -190,9 +218,11 @@
         }
 
         function createMovieCard(movieData, movieLink) {
-            
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
+            movieCard.addEventListener('click', () => {
+                window.location.href = movieLink;
+            });
 
             const movieImage = document.createElement('img');
             movieImage.src = `https://image.tmdb.org/t/p/w500${movieData.posterPath}`;
@@ -225,20 +255,29 @@
             watchLink.className = 'watch-link';
             watchLink.innerHTML = '<i class="material-icons">play_arrow</i>';
             watchLink.href = movieLink;
+            watchLink.addEventListener('click', (event) => {
+                event.stopPropagation(); // Evita que o clique no link acione o clique no card
+            });
 
             movieDetails.appendChild(movieTitle);
             movieDetails.appendChild(movieReleaseDate);
             movieDetails.appendChild(movieOverview);
             movieDetails.appendChild(movieDuration);
             movieDetails.appendChild(movieRating);
-            movieDetails.appendChild(watchLink);
             movieCard.appendChild(movieImage);
             movieCard.appendChild(movieDetails);
+            movieCard.appendChild(watchLink);
 
             return movieCard;
         }
-        
+
+        async function filterMovies(query, movieNames, movieLinks, apiKey) {
+            const filteredMovieNames = movieNames.filter(name => name.toLowerCase().includes(query.toLowerCase()));
+            const filteredMovieLinks = movieLinks.filter((link, index) => movieNames[index].toLowerCase().includes(query.toLowerCase()));
+            await displayMovies(filteredMovieNames, filteredMovieLinks, apiKey);
+        }
+
     </script>
 </body>
 
-</html>
+</html
