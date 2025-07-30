@@ -118,6 +118,55 @@
         .search i {
             color: white;
         }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #iframe-container {
+            position: relative;
+            width: 90%;
+            max-width: 1280px;
+            height: 70%;
+            background-color: black;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #movie-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #close-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f7921e;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -129,6 +178,13 @@
     </div>
     <p class="filmCount"></p>
     <div id="movies-container"></div>
+
+    <div id="overlay">
+        <div id="iframe-container">
+            <button id="close-overlay"><i class="material-icons">close</i></button>
+            <iframe id="movie-iframe" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -143,6 +199,8 @@
             searchInput.addEventListener('input', () => {
                 filterMovies(searchInput.value, movieNames, movieLinks, API_KEY);
             });
+
+            document.getElementById('close-overlay').addEventListener('click', closeMovieOverlay);
         });
 
         function processLinksFile(text) {
@@ -160,7 +218,7 @@
 
         async function displayMovies(movieNames, movieLinks, apiKey) {
             const moviesContainer = document.getElementById('movies-container');
-            moviesContainer.innerHTML = ''; // Limpa o container antes de adicionar novos cards
+            moviesContainer.innerHTML = '';
 
             for (let i = 0; i < movieNames.length; i++) {
                 const movieData = await fetchMovieData(movieNames[i], apiKey);
@@ -221,7 +279,7 @@
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
             movieCard.addEventListener('click', () => {
-                window.location.href = movieLink;
+                openMovieOverlay(movieLink);
             });
 
             const movieImage = document.createElement('img');
@@ -251,14 +309,6 @@
             movieRating.className = 'movie-rating';
             movieRating.textContent = `Avaliação: ${movieData.rating}/10`;
 
-            const watchLink = document.createElement('a');
-            watchLink.className = 'watch-link';
-            watchLink.innerHTML = '<i class="material-icons">play_arrow</i>';
-            watchLink.href = movieLink;
-            watchLink.addEventListener('click', (event) => {
-                event.stopPropagation(); // Evita que o clique no link acione o clique no card
-            });
-
             movieDetails.appendChild(movieTitle);
             movieDetails.appendChild(movieReleaseDate);
             movieDetails.appendChild(movieOverview);
@@ -266,9 +316,22 @@
             movieDetails.appendChild(movieRating);
             movieCard.appendChild(movieImage);
             movieCard.appendChild(movieDetails);
-            movieCard.appendChild(watchLink);
 
             return movieCard;
+        }
+
+        function openMovieOverlay(movieLink) {
+            const overlay = document.getElementById('overlay');
+            const iframe = document.getElementById('movie-iframe');
+            iframe.src = movieLink;
+            overlay.style.display = 'flex';
+        }
+
+        function closeMovieOverlay() {
+            const overlay = document.getElementById('overlay');
+            const iframe = document.getElementById('movie-iframe');
+            iframe.src = '';
+            overlay.style.display = 'none';
         }
 
         async function filterMovies(query, movieNames, movieLinks, apiKey) {
@@ -276,8 +339,7 @@
             const filteredMovieLinks = movieLinks.filter((link, index) => movieNames[index].toLowerCase().includes(query.toLowerCase()));
             await displayMovies(filteredMovieNames, filteredMovieLinks, apiKey);
         }
-
     </script>
 </body>
 
-</html
+</html>
