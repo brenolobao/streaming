@@ -494,6 +494,7 @@
             videoIframe.src = videoLink;
             videoIframeContainer.style.display = 'flex';
             document.getElementById('movie-modal').close();
+            document.body.style.overflowY = "hidden";
         }
 
         async function filterMovies(query, allMoviesData) {
