@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>PersonalFlix</title>
     <link rel="icon" href="favicon.png" type="image/png">
-    <title>Filmes Top Semana</title>
     <style>
         * {
             padding: 0;
@@ -308,131 +308,6 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const API_KEY = 'b0d688587e00ac9e00c51e95151c53c2';
-            let allMoviesData = [];
-
-            const text = await fetch('movies.txt').then(response => response.text());
-            const [movieNames, movieLinks] = processLinksFile(text);
-
-            const filmCount = document.querySelector('.filmCount');
-            filmCount.innerHTML = `Total de filmes: ${movieNames.length}`;
-
-            for (let i = 0; i < movieNames.length; i++) {
-                const movieData = await fetchMovieData(movieNames[i], API_KEY);
-                if (movieData) {
-                    allMoviesData.push({ ...movieData,
-                        link: movieLinks[i]
-                    });
-                }
-            }
-
-            await loadMoviesInSections(allMoviesData, API_KEY);
-
-            const searchInput = document.getElementById('search-input');
-            searchInput.addEventListener('input', () => {
-                filterMovies(searchInput.value, allMoviesData);
-            });
-
-            document.getElementById('movie-modal').addEventListener('close', () => {
-                document.body.classList.remove('no-scroll');
-            });
-
-            document.getElementById('modal-close').addEventListener('click', () => {
-                document.getElementById('movie-modal').close();
-            });
-
-            document.getElementById('close-video-button').addEventListener('click', () => {
-                const videoIframeContainer = document.getElementById('video-iframe-container');
-                const videoIframe = document.getElementById('video-iframe');
-                videoIframe.src = '';
-                videoIframeContainer.style.display = 'none';
-                document.body.classList.remove('no-scroll');
-            });
-        });
-
-        function processLinksFile(text) {
-            const lines = text.split('\n').map(line => line.trim()).filter(line => line !== '');
-            const movieNames = [];
-            const movieLinks = [];
-
-            for (let i = 0; i < lines.length; i += 2) {
-                movieNames.push(lines[i]);
-                movieLinks.push(lines[i + 1]);
-            }
-
-            return [movieNames, movieLinks];
-        }
-
-        async function fetchMovieData(movieName, apiKey) {
-            const encodedMovieName = encodeURIComponent(movieName);
-            const apiUrl = `https://api.themoviedb.org/3/search/movie?query=${encodedMovieName}&language=pt-BR&region=BR&api_key=${apiKey}`;
-
-            try {
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-                if (response.ok && data.results.length > 0) {
-                    const movie = data.results[0];
-                    const movieDetails = await fetchMovieDetailsFromTmdb(movie.id, apiKey);
-                    return {
-                        id: movie.id,
-                        title: movie.title,
-                        releaseDate: movie.release_date,
-                        posterPath: movie.poster_path,
-                        overview: movie.overview,
-                        duration: movieDetails.runtime,
-                        rating: movie.vote_average,
-                        genres: movieDetails.genres ? movieDetails.genres.map(g => ({
-                            id: g.id,
-                            name: g.name
-                        })) : [],
-                    };
-                } else {
-                    return null;
-                }
-            } catch (error) {
-                return null;
-            }
-        }
-
-        async function fetchMovieDetailsFromTmdb(movieId, apiKey) {
-            const apiUrl = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&language=pt-BR`;
-            try {
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-                return response.ok ? data : null;
-            } catch (error) {
-                return null;
-            }
-        }
-
-        async function loadMoviesInSections(moviesData, apiKey) {
-            const genresContainer = document.getElementById('genres-container');
-            genresContainer.innerHTML = '';
-
-            const uniqueGenres = new Map();
-            moviesData.forEach(movie => {
-                if (movie.genres) {
-                    movie.genres.forEach(genre => {
-                        if (!uniqueGenres.has(genre.id)) {
-                            uniqueGenres.set(genre.id, genre.name);
-                        }
-                    });
-                }
-            });
-
-            createMovieSection('Todos os Filmes', moviesData, genresContainer);
-
-            for (const [genreId, genreName] of uniqueGenres.entries()) {
-                const moviesInGenre = moviesData.filter(movie =>
-                    movie.genres && movie.genres.some(g => g.id === genreId)
-                );
-                if (moviesInGenre.length > 0) {
-                    createMovieSection(genreName, moviesInGenre, genresContainer);
-                }
-            }
-        }
-
         function createMovieSection(title, movies, parentContainer) {
             const genreSection = document.createElement('div');
             genreSection.className = 'genre-section';
@@ -495,7 +370,32 @@
             videoIframe.src = videoLink;
             videoIframeContainer.style.display = 'flex';
             document.getElementById('movie-modal').close();
+        }
 
+        async function loadMoviesInSections(moviesData) {
+            const genresContainer = document.getElementById('genres-container');
+            genresContainer.innerHTML = '';
+
+            const uniqueGenres = new Map();
+            moviesData.forEach(movie => {
+                if (movie.genres) {
+                    movie.genres.forEach(genre => {
+                        if (!uniqueGenres.has(genre.id)) {
+                            uniqueGenres.set(genre.id, genre.name);
+                        }
+                    });
+                }
+            });
+
+
+            for (const [genreId, genreName] of uniqueGenres.entries()) {
+                const moviesInGenre = moviesData.filter(movie =>
+                    movie.genres && movie.genres.some(g => g.id === genreId)
+                );
+                if (moviesInGenre.length > 0) {
+                    createMovieSection(genreName, moviesInGenre, genresContainer);
+                }
+            }
         }
 
         async function filterMovies(query, allMoviesData) {
@@ -503,7 +403,7 @@
             genresContainer.innerHTML = '';
 
             if (query.trim() === '') {
-                await loadMoviesInSections(allMoviesData, API_KEY);
+                await loadMoviesInSections(allMoviesData);
                 return;
             }
 
@@ -519,6 +419,39 @@
                 genresContainer.appendChild(noResults);
             }
         }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            let allMoviesData = [];
+
+            const response = await fetch('movies.json');
+            allMoviesData = await response.json();
+
+            const filmCount = document.querySelector('.filmCount');
+            filmCount.innerHTML = `Total de filmes: ${allMoviesData.length}`;
+
+            await loadMoviesInSections(allMoviesData);
+
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', () => {
+                filterMovies(searchInput.value, allMoviesData);
+            });
+
+            document.getElementById('movie-modal').addEventListener('close', () => {
+                document.body.classList.remove('no-scroll');
+            });
+
+            document.getElementById('modal-close').addEventListener('click', () => {
+                document.getElementById('movie-modal').close();
+            });
+
+            document.getElementById('close-video-button').addEventListener('click', () => {
+                const videoIframeContainer = document.getElementById('video-iframe-container');
+                const videoIframe = document.getElementById('video-iframe');
+                videoIframe.src = '';
+                videoIframeContainer.style.display = 'none';
+                document.body.classList.remove('no-scroll');
+            });
+        });
     </script>
 </body>
 
